@@ -1,11 +1,12 @@
 import numpy as np
 from keras import backend as K
 from keras.models import Sequential, Model
-from keras.layers.wrappers import TimeDistributed, Bidirectional
+from keras.layers.wrappers import TimeDistributed, Bidirectional, Layer
 from keras.layers import Dense, Dropout, Embedding, Input
 from keras.layers.core import Activation, RepeatVector, Permute, Reshape
 from keras.layers.recurrent import LSTM
-
+import argparse
+import numpy.random as randm
 class Attention(Layer):
 	def __init__(self, **kwargs):
 		self.supports_masking = True
@@ -67,7 +68,7 @@ def create_model(args, vocab, vocab_size, grs_size):
 	embedding_matrix = np.random.normal(loc=0.0, scale=0.01, size=(vocab_size, args.emb_dim))
 	emb_main = Embedding(vocab_size, args.emb_dim, mask_zero=True, weights=[get_emb_matrix_given_vocab(vocab, embeddings, embedding_matrix, args.emb_dim)]) 
 
-	sequence = Input(shape=(None, None, ),
+	sequence = Input(shape=(None,None,args.max_sentence_length ),
               dtype='int32', name='main_input')
 	
 	embedded_sent = TimeDistributed(emb_main)(sequence)
@@ -89,3 +90,14 @@ def create_model(args, vocab, vocab_size, grs_size):
 	model.summary()
 	
 	return model
+
+parser = argparse.ArgumentParser()
+args = parser.parse_args()
+args.emb_path = "glove.6B.50d.txt"
+args.emb_dim = 300
+args.dropout = 0.5
+args.model_path = ""
+args.rnn_dim = 128
+vocab = ["dog", "cat", "huma"]
+vocab_size = len(vocab)
+create_model(args, vocab, vocab_size, 10)
